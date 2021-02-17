@@ -291,6 +291,7 @@ export interface IGatsbyState {
     browserCompilationHash: string
     ssrCompilationHash: string
     trackedStaticQueryResults: Map<string, IStaticQueryResultState>
+    unsafeBuiltinWasUsedInSSR: boolean
   }
 }
 
@@ -372,6 +373,7 @@ export type ActionsUnion =
   | IRemovedHtml
   | IGeneratedHtml
   | IMarkHtmlDirty
+  | ISSRUsedUnsafeBuiltin
 
 export interface IApiFinishedAction {
   type: `API_FINISHED`
@@ -850,4 +852,8 @@ interface IMarkHtmlDirty {
     pages: Set<string>
     staticQueryHashes: Set<string>
   }
+}
+
+interface ISSRUsedUnsafeBuiltin {
+  type: `SSR_USED_UNSAFE_BUILTIN`
 }

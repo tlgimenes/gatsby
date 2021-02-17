@@ -20,6 +20,7 @@ import { getAbsolutePathForVirtualModule } from "./gatsby-webpack-virtual-module
 import { StaticQueryMapper } from "./webpack/static-query-mapper"
 import { TmpMiniCssExtractContentHashOverWrite } from "./webpack/tmp-mini-css-extract-contenthash-overwrite"
 import { getBrowsersList } from "./browserslist"
+import { builtinModules } from "module"
 
 const FRAMEWORK_BUNDLES = [`react`, `react-dom`, `scheduler`, `prop-types`]
 
@@ -609,7 +610,7 @@ module.exports = async (
     // removes node internals from bundle
     // https://webpack.js.org/configuration/externals/#externalspresets
     config.externalsPresets = {
-      node: true,
+      node: stage === `build-html` ? false : true,
     }
 
     // Packages we want to externalize to save some build time
@@ -681,6 +682,34 @@ module.exports = async (
         callback()
       },
     ]
+
+    if (stage === `build-html`) {
+      const builtinModulesToTrack = [
+        `fs`,
+        `http`,
+        `http2`,
+        `https`,
+        `child_process`,
+      ]
+      const builtinsExternalsDictionary = builtinModules.reduce(
+        (acc, builtinModule) => {
+          if (builtinModulesToTrack.includes(builtinModule)) {
+            acc[builtinModule] = `commonjs ${path.join(
+              process.cwd(),
+              `.cache`,
+              `ssr-builtin-trackers`,
+              builtinModule
+            )}`
+          } else {
+            acc[builtinModule] = `commonjs ${builtinModule}`
+          }
+          return acc
+        },
+        {}
+      )
+
+      config.externals.unshift(builtinsExternalsDictionary)
+    }
   }
 
   if (stage === `develop`) {
