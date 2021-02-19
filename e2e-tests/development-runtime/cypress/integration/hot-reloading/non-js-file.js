@@ -24,7 +24,6 @@ describe(`hot reloading non-js file`, () => {
     cy.exec(
       `npm run update -- --file content/2018-12-14-hello-world.md --replacements "${TEMPLATE}:${message}"`
     )
-    cy.wait(1000)
 
     // wati for socket.io to update
     cy.wait(5000)
