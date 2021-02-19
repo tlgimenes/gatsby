@@ -241,7 +241,7 @@ const renderHTMLQueue = async (
         prettyError.codeFrame ? `\n\n${prettyError.codeFrame}\n` : ``
       }`
 
-      console.warn(warningMessage)
+      reporter.warn(warningMessage)
     }
   }
 }
