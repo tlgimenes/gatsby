@@ -415,6 +415,9 @@ export const createWebpackUtils = (
     } = {}): RuleSetRule => {
       return {
         test: /\.(js|mjs|jsx)$/,
+        resolve: {
+          fullySpecified: false,
+        },
         include: (modulePath: string): boolean => {
           // when it's not coming from node_modules we treat it as a source file.
           if (!vendorRegex.test(modulePath)) {
@@ -508,6 +511,9 @@ export const createWebpackUtils = (
 
       return {
         test: /\.(js|mjs)$/,
+        resolve: {
+          fullySpecified: false,
+        },
         exclude: (modulePath: string): boolean => {
           // If dep is user land code, exclude
           if (!vendorRegex.test(modulePath)) {
