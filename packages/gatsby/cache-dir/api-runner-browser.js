@@ -1,11 +1,34 @@
-const plugins = require(`./api-runner-browser-plugins`)
 const {
   getResourceURLsForPathname,
   loadPage,
   loadPageSync,
 } = require(`./loader`).publicLoader
+const { nextTick } = require(`./next-tick`)
+
+let plugins = null
+
+exports.startPluginsAsync = async () => {
+  const buffer = []
+
+  await Promise.all(
+    require(`./api-runner-browser-plugins`).map(plugin =>
+      nextTick(() => {
+        plugin.plugin = plugin.pluginFn()
+
+        buffer.push(plugin)
+      })
+    )
+  )
+
+  plugins = buffer
+}
 
 exports.apiRunner = (api, args = {}, defaultReturn, argTransform) => {
+  if (plugins === null) {
+    console.error(`plugins not started`)
+    throw new Error(`plugins not started`)
+  }
+
   // Hooks for gatsby-cypress's API handler
   if (process.env.CYPRESS_SUPPORT) {
     if (window.___apiHandler) {
@@ -45,11 +68,17 @@ exports.apiRunner = (api, args = {}, defaultReturn, argTransform) => {
   }
 }
 
-exports.apiRunnerAsync = (api, args, defaultReturn) =>
-  plugins.reduce(
+exports.apiRunnerAsync = (api, args, defaultReturn) => {
+  if (plugins === null) {
+    console.error(`plugins not started`)
+    throw new Error(`plugins not started`)
+  }
+
+  return plugins.reduce(
     (previous, next) =>
       next.plugin[api]
         ? previous.then(() => next.plugin[api](args, next.options))
         : previous,
     Promise.resolve()
   )
+}

@@ -1,4 +1,4 @@
-import { apiRunner } from "./api-runner-browser"
+import { startPluginsAsync, apiRunner } from "./api-runner-browser"
 
 if (
   window.location.protocol !== `https:` &&
@@ -10,6 +10,7 @@ if (
 } else if (`serviceWorker` in navigator) {
   navigator.serviceWorker
     .register(`${__BASE_PATH__}/sw.js`)
+    .then(() => startPluginsAsync())
     .then(function (reg) {
       reg.addEventListener(`updatefound`, () => {
         apiRunner(`onServiceWorkerUpdateFound`, { serviceWorker: reg })
